@@ -1,9 +1,9 @@
 package tests
 
-import domain.Interpreter
+import domain.ConsoleInterpreter
 
 fun main() {
-   val interpreter = Interpreter()
+   val interpreter = ConsoleInterpreter()
     // Hello world
     interpreter.interpret("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.".toCharArray().toList())
     interpreter.reset()

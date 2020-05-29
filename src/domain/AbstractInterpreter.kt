@@ -1,34 +1,15 @@
 package domain
 
 import java.lang.RuntimeException
-import java.util.*
 import kotlin.math.absoluteValue
 
-open class Interpreter {
+abstract class AbstractInterpreter {
 
-    protected var memory = mutableListOf(0)
-    protected var negativeMemory = mutableListOf<Int>()
-    protected var programPointer = 0
+    private var memory = mutableListOf(0)
+    private var negativeMemory = mutableListOf<Int>()
+    private var programPointer = 0
 
     private val stack = mutableListOf<Int>()
-
-    private val scanner = Scanner(System.`in`)
-
-    protected fun puts(value: Int) {
-        if (programPointer >= 0) {
-            memory[programPointer] = value
-        } else {
-            negativeMemory[programPointer.absoluteValue - 1] = value
-        }
-    }
-
-    protected fun getPointedCellValue(): Int {
-        return if (programPointer >= 0) {
-            memory[programPointer]
-        } else {
-            negativeMemory[programPointer.absoluteValue - 1]
-        }
-    }
 
     private fun findMatchingEndWhile(program: List<Char>, startIndex: Int): Int? {
         var loopCounter = 0
@@ -94,14 +75,24 @@ open class Interpreter {
         negativeMemory[programPointer.absoluteValue - 1]--
     }
 
-    private fun printCell() {
-        val charToPrint = getPointedCellValue().toChar()
-        print(charToPrint)
+    protected abstract fun printCell()
+
+    protected abstract fun readToCell()
+
+    protected fun puts(value: Int) {
+        if (programPointer >= 0) {
+            memory[programPointer] = value
+        } else {
+            negativeMemory[programPointer.absoluteValue - 1] = value
+        }
     }
 
-    private fun readToCell() {
-        val input = scanner.next().single().toInt()
-        puts(input)
+    protected fun getPointedCellValue(): Int {
+        return if (programPointer >= 0) {
+            memory[programPointer]
+        } else {
+            negativeMemory[programPointer.absoluteValue - 1]
+        }
     }
 
     fun interpret(program: List<Char>) {
@@ -144,9 +135,5 @@ open class Interpreter {
         memory = mutableListOf(0)
         negativeMemory = mutableListOf()
         programPointer = 0
-    }
-
-    fun close() {
-        scanner.close()
     }
 }
