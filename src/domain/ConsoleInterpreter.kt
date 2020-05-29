@@ -1,8 +1,6 @@
 package domain
 
-import java.lang.RuntimeException
 import java.util.*
-import kotlin.math.absoluteValue
 
 class ConsoleInterpreter: AbstractInterpreter() {
 

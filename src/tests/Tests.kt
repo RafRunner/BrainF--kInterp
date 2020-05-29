@@ -7,8 +7,13 @@ fun main() {
     // Hello world
     interpreter.interpret("++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.".toCharArray().toList())
     interpreter.reset()
+
     // Thruth machine
     interpreter.interpret(",------------------------------------------------>++++++++++++++++++++++++++++++++++++++++++++++++<[>+[.]]>.".toCharArray().toList())
+    interpreter.reset()
+
+    // Cat
+    interpreter.interpret("+[>,.<]".toCharArray().toList())
 
     interpreter.close()
 }

@@ -5,8 +5,8 @@ import kotlin.math.absoluteValue
 
 abstract class AbstractInterpreter {
 
-    private var memory = mutableListOf(0)
-    private var negativeMemory = mutableListOf<Int>()
+    protected var memory = mutableListOf(0)
+    protected var negativeMemory = mutableListOf<Int>()
     private var programPointer = 0
 
     private val stack = mutableListOf<Int>()
@@ -44,7 +44,7 @@ abstract class AbstractInterpreter {
     }
 
     private fun incrementCell() {
-        if(programPointer >= 0) {
+        if (programPointer >= 0) {
             if (memory[programPointer] == 255) {
                 memory[programPointer] = 0
                 return
@@ -60,7 +60,7 @@ abstract class AbstractInterpreter {
     }
 
     private fun decrementCell() {
-        if(programPointer >= 0) {
+        if (programPointer >= 0) {
             if (memory[programPointer] == 0) {
                 memory[programPointer] = 255
                 return
