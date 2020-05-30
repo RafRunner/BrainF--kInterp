@@ -1,9 +1,11 @@
 package view
 
 import domain.WindowInterpreter
+import domain.exceptions.SyntaxErrorException
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.lang.Exception
 import javax.swing.*
 
 
@@ -25,46 +27,119 @@ class InterpreterView : JPanel() {
         return panel
     }
 
+    private fun getProgram(): List<Char> = codeWindow.text.toCharArray().toList()
+
+
     init {
         val interpreter = WindowInterpreter(outWindow, inWindow, memoryWindow)
-        var curentProgramThread: Thread? = null
+        var currentProgramThread: Thread? = null
 
-        isVisible = true
-
-        val btnInterpret = JButton("Interpret")
+        val btnInterpret = JButton("Run")
+        val btnDebug = JButton("Begin debugging")
+        val btnStep = JButton("Next step")
         val btnEndProgram = JButton("End program")
 
         btnInterpret.addActionListener {
             outWindow.text = ""
             inWindow.text = ""
-            curentProgramThread = Thread(Runnable {
+            codeWindow.isEditable = false
+            currentProgramThread = Thread(Runnable {
                 try {
-                    interpreter.interpret(codeWindow.text.toCharArray().toList())
+                    interpreter.reset()
+                    interpreter.interpret(getProgram())
                     outWindow.append("\nExecution finished")
                 } catch (e: StackOverflowError) {
                     outWindow.append("\nExecution interrupted by stack overflow")
                 } catch (e: InterruptedException) {
                     outWindow.append("\nExecution interrupted")
+                } catch (e: SyntaxErrorException) {
+                    outWindow.append("\nBad syntax! ${e.message}")
+                } catch (e: Exception) {
+                    outWindow.append("\nExecution interrupted by exception: ${e.message}")
                 } finally {
                     interpreter.dumpMemoryToMemoryWindow()
-                    interpreter.reset()
+                    codeWindow.isEditable = true
                 }
             })
-            curentProgramThread!!.start()
+            currentProgramThread!!.start()
+        }
+
+        var programCounter = 0
+        var programBeingDebbuged = getProgram()
+
+        btnDebug.addActionListener {
+            if (currentProgramThread != null) {
+                currentProgramThread!!.interrupt()
+            }
+            interpreter.reset()
+            programCounter = 0
+            programBeingDebbuged = getProgram()
+
+            btnStep.isEnabled = true
+            btnDebug.isEnabled = false
+
+            outWindow.text = ""
+            inWindow.text = ""
+            memoryWindow.text = ""
+            codeWindow.isEditable = false
+            memoryWindow.append("Beginning debug...\n")
+            memoryWindow.append("First instruction: ${getProgram()[0]}\n")
+        }
+
+        btnStep.addActionListener {
+            Thread(Runnable {
+                val program = programBeingDebbuged
+                if (programCounter == program.size) {
+                    outWindow.append("\nExecution finished")
+                    interpreter.reset()
+                    btnStep.isEnabled = false
+                    btnDebug.isEnabled = true
+                    codeWindow.isEditable = true
+                }
+                else {
+                    val oldCounter = programCounter
+                    try {
+                        programCounter = interpreter.interpret(program, programCounter, true)
+                    } catch (e: Exception) {
+                        when (e) {
+                            is StackOverflowError -> outWindow.append("\nDebugging interrupted by stack overflow")
+                            is SyntaxErrorException -> outWindow.append("\nDebugging interrupted by bad syntax ${e.message}")
+                            else -> outWindow.append("\nDebugging interrupted by exception: ${e.message}")
+                        }
+                        btnStep.isEnabled = false
+                        btnDebug.isEnabled = true
+                    } finally {
+                        interpreter.dumpMemoryToMemoryWindow()
+                        memoryWindow.append("Program counter: $programCounter\n")
+                        memoryWindow.append("Instruction executed: ${program[oldCounter]}\n")
+                        if (programCounter == program.size) {
+                            memoryWindow.append("This is the final instruction\n")
+                        } else {
+                            memoryWindow.append("Next instruction: ${program[programCounter]}\n")
+                        }
+                    }
+                }
+            }).start()
         }
 
         btnEndProgram.addActionListener {
-            if (curentProgramThread != null) {
-                curentProgramThread!!.interrupt()
-                interpreter.dumpMemoryToMemoryWindow()
-                inWindow.border = null
-                interpreter.reset()
+            if (currentProgramThread != null) {
+                currentProgramThread!!.interrupt()
             }
+            interpreter.dumpMemoryToMemoryWindow()
+            inWindow.border = null
+            btnStep.isEnabled = false
+            btnDebug.isEnabled = true
+            codeWindow.isEditable = true
         }
 
+        isVisible = true
         layout = GridBagLayout()
 
         outWindow.isEditable = false
+        memoryWindow.isEditable = false
+
+        btnStep.isEnabled = false
 
         val gb = GridBagConstraints()
         gb.anchor = GridBagConstraints.LINE_START
@@ -117,11 +192,18 @@ class InterpreterView : JPanel() {
         gb.gridx = 3
         add(addScrollToWindow(inWindow), gb)
 
+        val buttonsPanel = JPanel()
+        buttonsPanel.layout = BoxLayout(buttonsPanel, BoxLayout.X_AXIS)
+
+        buttonsPanel.add(btnInterpret)
+        buttonsPanel.add(btnDebug)
+        buttonsPanel.add(btnStep)
+
         gb.weighty = 0.1
         gb.fill = GridBagConstraints.NONE
         gb.gridy = 4
         gb.gridx = 1
-        add(btnInterpret, gb)
+        add(buttonsPanel, gb)
 
         gb.gridx = 3
         add(btnEndProgram, gb)

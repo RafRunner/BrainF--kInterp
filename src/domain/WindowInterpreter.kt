@@ -23,7 +23,7 @@ class WindowInterpreter(private val outWindow: JTextArea, private val inWindow: 
 
             override fun keyPressed(e: KeyEvent?) {
                 synchronized(lock) {
-                    val safeEvent = e ?: throw RuntimeException("Key Event not recived")
+                    val safeEvent = e ?: throw RuntimeException("Key Event not received")
                     inWindow.border = null
                     puts(safeEvent.keyChar.toInt())
                     lock.notifyAll()
@@ -49,5 +49,7 @@ class WindowInterpreter(private val outWindow: JTextArea, private val inWindow: 
         memory.forEachIndexed { i, c ->
             memoryWindow.append("$i: $c\n")
         }
+        memoryWindow.append("Memory pointer: $memoryPointer\n")
+        memoryWindow.append("Value pointed: ${getPointedCellValue()}\n")
     }
 }

@@ -9,7 +9,7 @@ class MainWindow (panel: JPanel) {
     private val width = 800
     private val height = 600
 
-    private val window: JFrame = JFrame("Brainfuck Interpreter")
+    private val window: JFrame = JFrame("Brainf**k Interpreter")
 
     init {
         window.defaultCloseOperation = JFrame.EXIT_ON_CLOSE

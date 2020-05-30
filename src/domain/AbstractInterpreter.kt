@@ -1,13 +1,13 @@
 package domain
 
-import java.lang.RuntimeException
+import domain.exceptions.SyntaxErrorException
 import kotlin.math.absoluteValue
 
 abstract class AbstractInterpreter {
 
     protected var memory = mutableListOf(0)
     protected var negativeMemory = mutableListOf<Int>()
-    private var programPointer = 0
+    protected var memoryPointer = 0
 
     private val stack = mutableListOf<Int>()
 
@@ -30,49 +30,49 @@ abstract class AbstractInterpreter {
     }
 
     private fun incrementPointer() {
-        programPointer++
-        if (programPointer > 0 && programPointer == memory.size) {
+        memoryPointer++
+        if (memoryPointer > 0 && memoryPointer == memory.size) {
             memory.add(0)
         }
     }
 
     private fun decrementPonter() {
-        programPointer--
-        if (programPointer < 0 && programPointer.absoluteValue - 1 == negativeMemory.size) {
+        memoryPointer--
+        if (memoryPointer < 0 && memoryPointer.absoluteValue - 1 == negativeMemory.size) {
             negativeMemory.add(0)
         }
     }
 
     private fun incrementCell() {
-        if (programPointer >= 0) {
-            if (memory[programPointer] == 255) {
-                memory[programPointer] = 0
+        if (memoryPointer >= 0) {
+            if (memory[memoryPointer] == 255) {
+                memory[memoryPointer] = 0
                 return
             }
-            memory[programPointer]++
+            memory[memoryPointer]++
             return
         }
-        if (negativeMemory[programPointer.absoluteValue - 1] == 255) {
-            negativeMemory[programPointer.absoluteValue - 1] = 0
+        if (negativeMemory[memoryPointer.absoluteValue - 1] == 255) {
+            negativeMemory[memoryPointer.absoluteValue - 1] = 0
             return
         }
-        negativeMemory[programPointer.absoluteValue - 1]++
+        negativeMemory[memoryPointer.absoluteValue - 1]++
     }
 
     private fun decrementCell() {
-        if (programPointer >= 0) {
-            if (memory[programPointer] == 0) {
-                memory[programPointer] = 255
+        if (memoryPointer >= 0) {
+            if (memory[memoryPointer] == 0) {
+                memory[memoryPointer] = 255
                 return
             }
-            memory[programPointer]--
+            memory[memoryPointer]--
             return
         }
-        if (negativeMemory[programPointer.absoluteValue - 1] == 0) {
-            negativeMemory[programPointer.absoluteValue - 1] = 255
+        if (negativeMemory[memoryPointer.absoluteValue - 1] == 0) {
+            negativeMemory[memoryPointer.absoluteValue - 1] = 255
             return
         }
-        negativeMemory[programPointer.absoluteValue - 1]--
+        negativeMemory[memoryPointer.absoluteValue - 1]--
     }
 
     protected abstract fun printCell()
@@ -80,27 +80,28 @@ abstract class AbstractInterpreter {
     protected abstract fun readToCell()
 
     protected fun puts(value: Int) {
-        if (programPointer >= 0) {
-            memory[programPointer] = value
+        if (memoryPointer >= 0) {
+            memory[memoryPointer] = value
         } else {
-            negativeMemory[programPointer.absoluteValue - 1] = value
+            negativeMemory[memoryPointer.absoluteValue - 1] = value
         }
     }
 
     protected fun getPointedCellValue(): Int {
-        return if (programPointer >= 0) {
-            memory[programPointer]
+        return if (memoryPointer >= 0) {
+            memory[memoryPointer]
         } else {
-            negativeMemory[programPointer.absoluteValue - 1]
+            negativeMemory[memoryPointer.absoluteValue - 1]
         }
     }
 
     fun interpret(program: List<Char>) {
-        interpret(program, 0)
+        interpret(program, 0, false)
     }
 
-    fun interpret(program: List<Char>, entryPoint: Int) {
-        program.slice(IntRange(entryPoint, program.size - 1)).forEachIndexed { i, c ->
+    fun interpret(program: List<Char>, entryPoint: Int, debugging: Boolean): Int {
+        val endPoit = if (debugging) entryPoint else program.size - 1
+        program.slice(IntRange(entryPoint, endPoit)).forEachIndexed { i, c ->
             val realIndex = i + entryPoint
 
             when(c) {
@@ -111,29 +112,36 @@ abstract class AbstractInterpreter {
                 '.' -> printCell()
                 ',' -> readToCell()
                 '[' -> {
-                    val currentValue = getPointedCellValue()
-                    if (currentValue == 0) {
-                        val indexToJump = findMatchingEndWhile(program, realIndex)
-                            ?: throw RuntimeException("A open loop in index $realIndex must be closed")
-                        interpret(program, indexToJump + 1)
-                        return
+                    val indexToJump = findMatchingEndWhile(program, realIndex)
+                        ?: throw SyntaxErrorException("A open loop '[' in index $realIndex must be closed")
+                    if (getPointedCellValue() == 0) {
+                        if (!debugging) {
+                            interpret(program, indexToJump + 1, false)
+                        }
+                        return indexToJump + 1
                     }
                     stack.add(realIndex)
                 }
                 ']' -> {
-                    if (stack.isNotEmpty()) {
-                        val indexToJump = stack.removeAt(stack.size - 1)
-                        interpret(program, indexToJump)
-                        return
+                    if (stack.isEmpty()) {
+                        throw SyntaxErrorException("A closing loop ']' in index $realIndex has no '[' to return")
+                    }
+                    val indexToJump = stack.removeAt(stack.size - 1)
+                    if (getPointedCellValue() != 0) {
+                        if (!debugging) {
+                            interpret(program, indexToJump, false)
+                        }
+                        return indexToJump
                     }
                 }
             }
         }
+        return entryPoint + 1
     }
 
     fun reset() {
         memory = mutableListOf(0)
         negativeMemory = mutableListOf()
-        programPointer = 0
+        memoryPointer = 0
     }
 }
