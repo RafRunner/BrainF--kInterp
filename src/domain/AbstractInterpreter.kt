@@ -9,7 +9,7 @@ abstract class AbstractInterpreter {
     protected var negativeMemory = mutableListOf<Int>()
     protected var memoryPointer = 0
 
-    private val stack = mutableListOf<Int>()
+    private var stack = mutableListOf<Int>()
 
     private fun findMatchingEndWhile(program: List<Char>, startIndex: Int): Int? {
         var loopCounter = 0
@@ -142,6 +142,7 @@ abstract class AbstractInterpreter {
     fun reset() {
         memory = mutableListOf(0)
         negativeMemory = mutableListOf()
+        stack = mutableListOf()
         memoryPointer = 0
     }
 }

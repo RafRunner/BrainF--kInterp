@@ -6,8 +6,8 @@ import javax.swing.JPanel
 
 class MainWindow (panel: JPanel) {
 
-    private val width = 800
-    private val height = 600
+    private val width = 900
+    private val height = 700
 
     private val window: JFrame = JFrame("Brainf**k Interpreter")
 
