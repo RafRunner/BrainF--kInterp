@@ -48,8 +48,6 @@ class InterpreterView : JPanel() {
                     interpreter.reset()
                     interpreter.interpret(getProgram())
                     outWindow.append("\nExecution finished")
-                } catch (e: StackOverflowError) {
-                    outWindow.append("\nExecution interrupted by stack overflow")
                 } catch (e: InterruptedException) {
                     outWindow.append("\nExecution interrupted")
                 } catch (e: SyntaxErrorException) {
@@ -91,7 +89,6 @@ class InterpreterView : JPanel() {
                 val program = programBeingDebbuged
                 if (programCounter == program.size) {
                     outWindow.append("\nExecution finished")
-                    interpreter.reset()
                     btnStep.isEnabled = false
                     btnDebug.isEnabled = true
                     codeWindow.isEditable = true
@@ -102,12 +99,12 @@ class InterpreterView : JPanel() {
                         programCounter = interpreter.interpret(program, programCounter, true)
                     } catch (e: Exception) {
                         when (e) {
-                            is StackOverflowError -> outWindow.append("\nDebugging interrupted by stack overflow")
-                            is SyntaxErrorException -> outWindow.append("\nDebugging interrupted by bad syntax ${e.message}")
+                            is SyntaxErrorException -> outWindow.append("\nDebugging interrupted by bad syntax: ${e.message}")
                             else -> outWindow.append("\nDebugging interrupted by exception: ${e.message}")
                         }
                         btnStep.isEnabled = false
                         btnDebug.isEnabled = true
+                        codeWindow.isEditable = true
                     } finally {
                         interpreter.dumpMemoryToMemoryWindow()
                         memoryWindow.append("Program counter: $programCounter\n")
@@ -126,7 +123,6 @@ class InterpreterView : JPanel() {
             if (currentProgramThread != null) {
                 currentProgramThread!!.interrupt()
             }
-            interpreter.dumpMemoryToMemoryWindow()
             inWindow.border = null
             btnStep.isEnabled = false
             btnDebug.isEnabled = true
@@ -160,7 +156,7 @@ class InterpreterView : JPanel() {
 
         gb.gridx = 1
         gb.weightx = 1.0
-        add(JLabel("Enter the code here:"), gb)
+        add(JLabel("Code:"), gb)
 
         gb.gridx = 3
         gb.weightx = 0.2

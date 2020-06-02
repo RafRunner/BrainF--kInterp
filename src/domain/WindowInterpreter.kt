@@ -43,8 +43,10 @@ class WindowInterpreter(private val outWindow: JTextArea, private val inWindow: 
 
     fun dumpMemoryToMemoryWindow() {
         memoryWindow.text = ""
-        negativeMemory.forEachIndexed { i, c ->
-            memoryWindow.append("${-1 * (i + 1)}: $c\n")
+        var ni = negativeMemory.size
+        while (ni > 0) {
+            ni--
+            memoryWindow.append("${-1 * (ni + 1)}: ${negativeMemory[ni]}\n")
         }
         memory.forEachIndexed { i, c ->
             memoryWindow.append("$i: $c\n")

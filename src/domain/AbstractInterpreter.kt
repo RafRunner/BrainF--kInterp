@@ -101,10 +101,10 @@ abstract class AbstractInterpreter {
 
     fun interpret(program: List<Char>, entryPoint: Int, debugging: Boolean): Int {
         val endPoit = if (debugging) entryPoint else program.size - 1
-        program.slice(IntRange(entryPoint, endPoit)).forEachIndexed { i, c ->
-            val realIndex = i + entryPoint
+        var index = entryPoint
 
-            when(c) {
+        loop@ while (index <= endPoit) {
+            when(program[index]) {
                 '>' -> incrementPointer()
                 '<' -> decrementPonter()
                 '+' -> incrementCell()
@@ -112,31 +112,34 @@ abstract class AbstractInterpreter {
                 '.' -> printCell()
                 ',' -> readToCell()
                 '[' -> {
-                    val indexToJump = findMatchingEndWhile(program, realIndex)
-                        ?: throw SyntaxErrorException("A open loop '[' in index $realIndex must be closed")
+                    val indexToJump = findMatchingEndWhile(program, index)
+                        ?: throw SyntaxErrorException("A open loop '[' in index $index must be closed")
                     if (getPointedCellValue() == 0) {
-                        if (!debugging) {
-                            interpret(program, indexToJump + 1, false)
+                        index = indexToJump + 1
+                        if (debugging) {
+                            break@loop
                         }
-                        return indexToJump + 1
+                        continue@loop
                     }
-                    stack.add(realIndex)
+                    stack.add(index)
                 }
                 ']' -> {
                     if (stack.isEmpty()) {
-                        throw SyntaxErrorException("A closing loop ']' in index $realIndex has no '[' to return")
+                        throw SyntaxErrorException("A closing loop ']' in index $index has no '[' to return")
                     }
                     val indexToJump = stack.removeAt(stack.size - 1)
                     if (getPointedCellValue() != 0) {
-                        if (!debugging) {
-                            interpret(program, indexToJump, false)
+                        index = indexToJump
+                        if (debugging) {
+                            break@loop
                         }
-                        return indexToJump
+                        continue@loop
                     }
                 }
             }
+            index++
         }
-        return entryPoint + 1
+        return index
     }
 
     fun reset() {
