@@ -3,10 +3,13 @@ package view
 import domain.WindowInterpreter
 import domain.exceptions.SyntaxErrorException
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.lang.Exception
 import javax.swing.*
+import javax.swing.text.DefaultHighlighter
+import javax.swing.text.PlainDocument
 
 
 class InterpreterView : JPanel() {
@@ -40,9 +43,10 @@ class InterpreterView : JPanel() {
         val btnEndProgram = JButton("End program")
 
         btnInterpret.addActionListener {
-            outWindow.text = ""
-            inWindow.text = ""
+            outWindow.document = PlainDocument()
+            inWindow.document = PlainDocument()
             codeWindow.isEditable = false
+            codeWindow.highlighter.removeAllHighlights()
             currentProgramThread = Thread(Runnable {
                 try {
                     interpreter.reset()
@@ -76,10 +80,11 @@ class InterpreterView : JPanel() {
             btnStep.isEnabled = true
             btnDebug.isEnabled = false
 
-            outWindow.text = ""
-            inWindow.text = ""
-            memoryWindow.text = ""
+            outWindow.document = PlainDocument()
+            inWindow.document = PlainDocument()
+            memoryWindow.document = PlainDocument()
             codeWindow.isEditable = false
+            codeWindow.highlighter.addHighlight(0, 1, DefaultHighlighter.DefaultHighlightPainter(Color.RED))
             memoryWindow.append("Beginning debug...\n")
             memoryWindow.append("First instruction: ${getProgram()[0]}\n")
         }
@@ -92,6 +97,7 @@ class InterpreterView : JPanel() {
                     btnStep.isEnabled = false
                     btnDebug.isEnabled = true
                     codeWindow.isEditable = true
+                    codeWindow.highlighter.removeAllHighlights()
                 }
                 else {
                     val oldCounter = programCounter
@@ -105,14 +111,17 @@ class InterpreterView : JPanel() {
                         btnStep.isEnabled = false
                         btnDebug.isEnabled = true
                         codeWindow.isEditable = true
+                        codeWindow.highlighter.removeAllHighlights()
                     } finally {
+                        codeWindow.highlighter.removeAllHighlights()
+                        codeWindow.highlighter.addHighlight(programCounter, programCounter + 1, DefaultHighlighter.DefaultHighlightPainter(Color.RED))
                         interpreter.dumpMemoryToMemoryWindow()
-                        memoryWindow.append("Program counter: $programCounter\n")
+                        memoryWindow.append("\nProgram counter: $programCounter\n")
                         memoryWindow.append("Instruction executed: ${program[oldCounter]}\n")
                         if (programCounter == program.size) {
-                            memoryWindow.append("This is the final instruction\n")
+                            memoryWindow.append("\nThis is the final instruction\n")
                         } else {
-                            memoryWindow.append("Next instruction: ${program[programCounter]}\n")
+                            memoryWindow.append("\nNext instruction: ${program[programCounter]}\n")
                         }
                     }
                 }
@@ -127,6 +136,7 @@ class InterpreterView : JPanel() {
             btnStep.isEnabled = false
             btnDebug.isEnabled = true
             codeWindow.isEditable = true
+            codeWindow.highlighter.removeAllHighlights()
         }
 
         isVisible = true

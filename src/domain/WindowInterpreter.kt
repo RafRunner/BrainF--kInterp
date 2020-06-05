@@ -3,8 +3,10 @@ package domain
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.lang.RuntimeException
+import java.lang.StringBuilder
 import javax.swing.BorderFactory
 import javax.swing.JTextArea
+import javax.swing.text.PlainDocument
 
 class WindowInterpreter(private val outWindow: JTextArea, private val inWindow: JTextArea, private val memoryWindow:JTextArea) : AbstractInterpreter() {
 
@@ -24,8 +26,14 @@ class WindowInterpreter(private val outWindow: JTextArea, private val inWindow: 
             override fun keyPressed(e: KeyEvent?) {
                 synchronized(lock) {
                     val safeEvent = e ?: throw RuntimeException("Key Event not received")
+                    val asciiValue = safeEvent.keyChar.toInt()
+
+                    if (asciiValue < 0 || asciiValue > 255) {
+                        return
+                    }
+
                     inWindow.border = null
-                    puts(safeEvent.keyChar.toInt())
+                    puts(asciiValue)
                     lock.notifyAll()
                 }
             }
@@ -42,16 +50,19 @@ class WindowInterpreter(private val outWindow: JTextArea, private val inWindow: 
     }
 
     fun dumpMemoryToMemoryWindow() {
-        memoryWindow.text = ""
+        val memoryOutput = StringBuilder()
         var ni = negativeMemory.size
         while (ni > 0) {
             ni--
-            memoryWindow.append("${-1 * (ni + 1)}: ${negativeMemory[ni]}\n")
+            memoryOutput.append("${-1 * (ni + 1)}: ${negativeMemory[ni]}\n")
         }
         memory.forEachIndexed { i, c ->
-            memoryWindow.append("$i: $c\n")
+            memoryOutput.append("$i: $c\n")
         }
-        memoryWindow.append("Memory pointer: $memoryPointer\n")
-        memoryWindow.append("Value pointed: ${getPointedCellValue()}\n")
+        memoryOutput.append("\nMemory pointer: $memoryPointer\n")
+        memoryOutput.append("Value pointed: ${getPointedCellValue()}\n")
+
+        memoryWindow.document = PlainDocument()
+        memoryWindow.text = memoryOutput.toString()
     }
 }

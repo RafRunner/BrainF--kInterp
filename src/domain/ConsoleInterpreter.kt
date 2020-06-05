@@ -13,6 +13,11 @@ class ConsoleInterpreter: AbstractInterpreter() {
 
     override fun readToCell() {
         val input = scanner.next().single().toInt()
+
+        if (input < 0 || input > 255) {
+            return
+        }
+
         puts(input)
     }
 
