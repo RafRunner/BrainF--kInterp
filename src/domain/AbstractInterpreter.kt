@@ -44,35 +44,23 @@ abstract class AbstractInterpreter {
     }
 
     private fun incrementCell() {
-        if (memoryPointer >= 0) {
-            if (memory[memoryPointer] == 255) {
-                memory[memoryPointer] = 0
-                return
-            }
-            memory[memoryPointer]++
-            return
+        val currentValue = getPointedCellValue()
+
+        if (currentValue == 255) {
+            puts(0)
+        } else {
+            puts(currentValue + 1)
         }
-        if (negativeMemory[memoryPointer.absoluteValue - 1] == 255) {
-            negativeMemory[memoryPointer.absoluteValue - 1] = 0
-            return
-        }
-        negativeMemory[memoryPointer.absoluteValue - 1]++
     }
 
     private fun decrementCell() {
-        if (memoryPointer >= 0) {
-            if (memory[memoryPointer] == 0) {
-                memory[memoryPointer] = 255
-                return
-            }
-            memory[memoryPointer]--
-            return
+        val currentValue = getPointedCellValue()
+
+        if (currentValue == 0) {
+            puts(255)
+        } else {
+            puts(currentValue - 1)
         }
-        if (negativeMemory[memoryPointer.absoluteValue - 1] == 0) {
-            negativeMemory[memoryPointer.absoluteValue - 1] = 255
-            return
-        }
-        negativeMemory[memoryPointer.absoluteValue - 1]--
     }
 
     protected abstract fun printCell()

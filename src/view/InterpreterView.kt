@@ -11,7 +11,6 @@ import javax.swing.*
 import javax.swing.text.DefaultHighlighter
 import javax.swing.text.PlainDocument
 
-
 class InterpreterView : JPanel() {
 
     private val codeWindow = JTextArea()
@@ -47,6 +46,7 @@ class InterpreterView : JPanel() {
             inWindow.document = PlainDocument()
             codeWindow.isEditable = false
             codeWindow.highlighter.removeAllHighlights()
+
             currentProgramThread = Thread(Runnable {
                 try {
                     interpreter.reset()
@@ -63,6 +63,7 @@ class InterpreterView : JPanel() {
                     codeWindow.isEditable = true
                 }
             })
+
             currentProgramThread!!.start()
         }
 
@@ -73,6 +74,7 @@ class InterpreterView : JPanel() {
             if (currentProgramThread != null) {
                 currentProgramThread!!.interrupt()
             }
+
             interpreter.reset()
             programCounter = 0
             programBeingDebbuged = getProgram()
@@ -85,6 +87,7 @@ class InterpreterView : JPanel() {
             memoryWindow.document = PlainDocument()
             codeWindow.isEditable = false
             codeWindow.highlighter.addHighlight(0, 1, DefaultHighlighter.DefaultHighlightPainter(Color.RED))
+
             memoryWindow.append("Beginning debug...\n")
             memoryWindow.append("First instruction: ${getProgram()[0]}\n")
         }
@@ -92,32 +95,37 @@ class InterpreterView : JPanel() {
         btnStep.addActionListener {
             Thread(Runnable {
                 val program = programBeingDebbuged
+
                 if (programCounter == program.size) {
-                    outWindow.append("\nExecution finished")
                     btnStep.isEnabled = false
                     btnDebug.isEnabled = true
                     codeWindow.isEditable = true
                     codeWindow.highlighter.removeAllHighlights()
+
+                    outWindow.append("\nExecution finished")
                 }
                 else {
                     val oldCounter = programCounter
                     try {
                         programCounter = interpreter.interpret(program, programCounter, true)
                     } catch (e: Exception) {
-                        when (e) {
-                            is SyntaxErrorException -> outWindow.append("\nDebugging interrupted by bad syntax: ${e.message}")
-                            else -> outWindow.append("\nDebugging interrupted by exception: ${e.message}")
-                        }
                         btnStep.isEnabled = false
                         btnDebug.isEnabled = true
                         codeWindow.isEditable = true
                         codeWindow.highlighter.removeAllHighlights()
+
+                        when (e) {
+                            is SyntaxErrorException -> outWindow.append("\nDebugging interrupted by bad syntax: ${e.message}")
+                            else -> outWindow.append("\nDebugging interrupted by exception: ${e.message}")
+                        }
                     } finally {
                         codeWindow.highlighter.removeAllHighlights()
                         codeWindow.highlighter.addHighlight(programCounter, programCounter + 1, DefaultHighlighter.DefaultHighlightPainter(Color.RED))
                         interpreter.dumpMemoryToMemoryWindow()
+
                         memoryWindow.append("\nProgram counter: $programCounter\n")
                         memoryWindow.append("Instruction executed: ${program[oldCounter]}\n")
+
                         if (programCounter == program.size) {
                             memoryWindow.append("\nThis is the final instruction\n")
                         } else {
@@ -132,6 +140,7 @@ class InterpreterView : JPanel() {
             if (currentProgramThread != null) {
                 currentProgramThread!!.interrupt()
             }
+
             inWindow.border = null
             btnStep.isEnabled = false
             btnDebug.isEnabled = true
