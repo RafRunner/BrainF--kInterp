@@ -127,7 +127,7 @@ class InterpreterView : JPanel() {
                         memoryWindow.append("Instruction executed: ${program[oldCounter]}\n")
 
                         if (programCounter == program.size) {
-                            memoryWindow.append("\nThis is the final instruction\n")
+                            memoryWindow.append("\nThis was the final instruction\n")
                         } else {
                             memoryWindow.append("\nNext instruction: ${program[programCounter]}\n")
                         }
