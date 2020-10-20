@@ -1,6 +1,7 @@
 package domain
 
 import domain.exceptions.SyntaxErrorException
+import java.util.ArrayDeque
 import kotlin.math.absoluteValue
 
 abstract class AbstractInterpreter {
@@ -9,7 +10,7 @@ abstract class AbstractInterpreter {
     protected var negativeMemory = mutableListOf<Int>()
     protected var memoryPointer = 0
 
-    private var stack = mutableListOf<Int>()
+    private var stack = ArrayDeque<Int>()
 
     private fun findMatchingEndWhile(program: List<Char>, startIndex: Int): Int? {
         var loopCounter = 0
@@ -109,13 +110,13 @@ abstract class AbstractInterpreter {
                         }
                         continue@loop
                     }
-                    stack.add(index)
+                    stack.push(index)
                 }
                 ']' -> {
                     if (stack.isEmpty()) {
                         throw SyntaxErrorException("A closing loop ']' in index $index has no '[' to return")
                     }
-                    val indexToJump = stack.removeAt(stack.size - 1)
+                    val indexToJump = stack.pop()
                     if (getPointedCellValue() != 0) {
                         index = indexToJump
                         if (debugging) {
@@ -133,7 +134,7 @@ abstract class AbstractInterpreter {
     fun reset() {
         memory = mutableListOf(0)
         negativeMemory = mutableListOf()
-        stack = mutableListOf()
+        stack = ArrayDeque()
         memoryPointer = 0
     }
 }
