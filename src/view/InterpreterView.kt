@@ -199,7 +199,7 @@ class InterpreterView : JPanel() {
         gb.gridy = 3
         gb.gridx = 1
         add(addScrollToWindow(outWindow), gb)
-        // The code windows must not wrap lines so some code output can be properly formatted
+        // The output window must not wrap lines so some code output can be properly formatted
         outWindow.lineWrap = false
 
         gb.gridx = 3
