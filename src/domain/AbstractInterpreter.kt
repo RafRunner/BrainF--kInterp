@@ -10,14 +10,23 @@ abstract class AbstractInterpreter {
     protected var negativeMemory = mutableListOf<Int>()
     protected var memoryPointer = 0
 
+    // The callstack (addresses of '['s so the program knows where to jump from a ']')
     private var stack = ArrayDeque<Int>()
+    // A cache so the program doesn't have to find matching ']'s everytime
+    private var matchingEndWhileCahe = mutableMapOf<Int, Int>()
 
-    private fun findMatchingEndWhile(program: List<Char>, startIndex: Int): Int? {
+    private fun findMatchingEndWhile(program: CharArray, startIndex: Int): Int? {
+        val valueInCache = matchingEndWhileCahe[startIndex]
+        if (valueInCache != null) {
+            return valueInCache
+        }
+
         var loopCounter = 0
 
         program.slice(IntRange(startIndex + 1, program.size - 1)).forEachIndexed { i, c ->
             if (c == ']') {
                 if (loopCounter == 0) {
+                    matchingEndWhileCahe[startIndex] = i + startIndex + 1
                     return  i + startIndex + 1
                 }
                 loopCounter--
@@ -84,11 +93,15 @@ abstract class AbstractInterpreter {
         }
     }
 
-    fun interpret(program: List<Char>) {
+    fun interpret(program: String) {
+        interpret(program.toCharArray())
+    }
+
+    fun interpret(program: CharArray) {
         interpret(program, 0, false)
     }
 
-    fun interpret(program: List<Char>, entryPoint: Int, debugging: Boolean): Int {
+    fun interpret(program: CharArray, entryPoint: Int, debugging: Boolean): Int {
         val endPoit = if (debugging) entryPoint else program.size - 1
         var index = entryPoint
 

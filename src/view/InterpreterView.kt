@@ -2,10 +2,7 @@ package view
 
 import domain.WindowInterpreter
 import domain.exceptions.SyntaxErrorException
-import java.awt.BorderLayout
-import java.awt.Color
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
+import java.awt.*
 import java.lang.Exception
 import javax.swing.*
 import javax.swing.text.DefaultHighlighter
@@ -24,13 +21,13 @@ class InterpreterView : JPanel() {
 
         val scroll = JScrollPane(textArea)
         textArea.lineWrap = true
+        textArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
 
         panel.add(scroll, BorderLayout.CENTER)
         return panel
     }
 
-    private fun getProgram(): List<Char> = codeWindow.text.toCharArray().toList()
-
+    private fun getProgram(): CharArray = codeWindow.text.toCharArray()
 
     init {
         val interpreter = WindowInterpreter(outWindow, inWindow, memoryWindow)
@@ -158,8 +155,6 @@ class InterpreterView : JPanel() {
 
         val gb = GridBagConstraints()
         gb.anchor = GridBagConstraints.LINE_START
-        gb.weightx = 1.0
-        gb.weighty = 1.0
 
         gb.gridx = 0
         gb.gridy = 0
@@ -178,17 +173,18 @@ class InterpreterView : JPanel() {
         add(JLabel("Code:"), gb)
 
         gb.gridx = 3
-        gb.weightx = 0.2
+        gb.weightx = 0.3
         add(JLabel("Program memory:"), gb)
 
         gb.gridy = 1
         gb.gridx = 1
         gb.weighty = 1.0
+        gb.weightx = 1.0
         gb.fill = GridBagConstraints.BOTH
         add(addScrollToWindow(codeWindow), gb)
 
         gb.gridx = 3
-        gb.weightx = 0.2
+        gb.weightx = 0.3
         add(addScrollToWindow(memoryWindow), gb)
 
         gb.weighty = 0.05
@@ -199,10 +195,12 @@ class InterpreterView : JPanel() {
         gb.gridx = 3
         add(JLabel("Program input:"), gb)
 
-        gb.weighty = 0.3
+        gb.weighty = 0.5
         gb.gridy = 3
         gb.gridx = 1
         add(addScrollToWindow(outWindow), gb)
+        // The code windows must not wrap lines so some code output can be properly formatted
+        outWindow.lineWrap = false
 
         gb.gridx = 3
         add(addScrollToWindow(inWindow), gb)

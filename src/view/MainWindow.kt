@@ -16,7 +16,6 @@ class MainWindow (panel: JPanel) {
         window.setLocation(500, 300)
         window.preferredSize = Dimension(width, height)
         window.isVisible = true
-        window.isResizable = false
         window.add(panel)
         window.pack()
     }
