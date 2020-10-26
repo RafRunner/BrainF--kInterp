@@ -13,10 +13,10 @@ abstract class AbstractInterpreter {
     // The callstack (addresses of '['s so the program knows where to jump from a ']')
     private var stack = ArrayDeque<Int>()
     // A cache so the program doesn't have to find matching ']'s everytime
-    private var matchingEndWhileCahe = mutableMapOf<Int, Int>()
+    private var matchingEndWhileCache = mutableMapOf<Int, Int>()
 
     private fun findMatchingEndWhile(program: CharArray, startIndex: Int): Int? {
-        val valueInCache = matchingEndWhileCahe[startIndex]
+        val valueInCache = matchingEndWhileCache[startIndex]
         if (valueInCache != null) {
             return valueInCache
         }
@@ -26,7 +26,7 @@ abstract class AbstractInterpreter {
         program.slice(IntRange(startIndex + 1, program.size - 1)).forEachIndexed { i, c ->
             if (c == ']') {
                 if (loopCounter == 0) {
-                    matchingEndWhileCahe[startIndex] = i + startIndex + 1
+                    matchingEndWhileCache[startIndex] = i + startIndex + 1
                     return  i + startIndex + 1
                 }
                 loopCounter--
@@ -147,7 +147,8 @@ abstract class AbstractInterpreter {
     fun reset() {
         memory = mutableListOf(0)
         negativeMemory = mutableListOf()
-        stack = ArrayDeque()
         memoryPointer = 0
+        stack = ArrayDeque()
+        matchingEndWhileCache = mutableMapOf()
     }
 }
