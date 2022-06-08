@@ -46,7 +46,7 @@ abstract class AbstractInterpreter {
         }
     }
 
-    private fun decrementPonter() {
+    private fun decrementPointer() {
         memoryPointer--
         if (memoryPointer < 0 && memoryPointer.absoluteValue - 1 == negativeMemory.size) {
             negativeMemory.add(0)
@@ -102,13 +102,13 @@ abstract class AbstractInterpreter {
     }
 
     fun interpret(program: CharArray, entryPoint: Int, debugging: Boolean): Int {
-        val endPoit = if (debugging) entryPoint else program.size - 1
+        val endPoint = if (debugging) entryPoint else program.size - 1
         var index = entryPoint
 
-        loop@ while (index <= endPoit) {
+        loop@ while (index <= endPoint) {
             when(program[index]) {
                 '>' -> incrementPointer()
-                '<' -> decrementPonter()
+                '<' -> decrementPointer()
                 '+' -> incrementCell()
                 '-' -> decrementCell()
                 '.' -> printCell()

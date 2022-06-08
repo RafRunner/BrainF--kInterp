@@ -44,7 +44,7 @@ class InterpreterView : JPanel() {
             codeWindow.isEditable = false
             codeWindow.highlighter.removeAllHighlights()
 
-            currentProgramThread = Thread(Runnable {
+            currentProgramThread = Thread {
                 try {
                     interpreter.reset()
                     interpreter.interpret(getProgram())
@@ -59,13 +59,13 @@ class InterpreterView : JPanel() {
                     interpreter.dumpMemoryToMemoryWindow()
                     codeWindow.isEditable = true
                 }
-            })
+            }
 
             currentProgramThread!!.start()
         }
 
         var programCounter = 0
-        var programBeingDebbuged = getProgram()
+        var programBeingDebugged = getProgram()
 
         btnDebug.addActionListener {
             if (currentProgramThread != null) {
@@ -74,7 +74,7 @@ class InterpreterView : JPanel() {
 
             interpreter.reset()
             programCounter = 0
-            programBeingDebbuged = getProgram()
+            programBeingDebugged = getProgram()
 
             btnStep.isEnabled = true
             btnDebug.isEnabled = false
@@ -90,8 +90,8 @@ class InterpreterView : JPanel() {
         }
 
         btnStep.addActionListener {
-            Thread(Runnable {
-                val program = programBeingDebbuged
+            Thread {
+                val program = programBeingDebugged
 
                 if (programCounter == program.size) {
                     btnStep.isEnabled = false
@@ -130,7 +130,7 @@ class InterpreterView : JPanel() {
                         }
                     }
                 }
-            }).start()
+            }.start()
         }
 
         btnEndProgram.addActionListener {

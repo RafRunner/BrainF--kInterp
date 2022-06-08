@@ -160,7 +160,7 @@ fun main() {
 <<<<<]]>>>]""")
     interpreter.reset()
 
-    // Thruth machine
+    // Truth machine
     interpreter.interpret(",------------------------------------------------>++++++++++++++++++++++++++++++++++++++++++++++++<[>+[.]]>.")
     println()
     interpreter.reset()
